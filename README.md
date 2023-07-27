@@ -1,3 +1,3 @@
-# tonton, a real-time chat app.
+# tonton
 
 ![tonton](https://pbs.twimg.com/media/EYLdhUPVcAE9JWu.jpg)
