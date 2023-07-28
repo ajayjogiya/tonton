@@ -21,10 +21,8 @@ func NewClient(c proto.ChatServiceClient) *client {
 
 var wg sync.WaitGroup
 
-func (c *client) streamChat() {
+func (c *client) streamChat(ctx context.Context) {
 	log.Print("mayChat invoked")
-
-	ctx := context.Background()
 
 	stream, err := c.StreamChat(ctx)
 	if err != nil {
@@ -48,6 +46,10 @@ func (c *client) send(ctx context.Context, stream proto.ChatService_StreamChatCl
 		fmt.Println("Message: ")
 		if sc.Scan() {
 			cm.Message = sc.Text()
+		}
+		fmt.Println("To: ")
+		if sc.Scan() {
+			cm.To = sc.Text()
 		}
 		// Hacky way to close the stream
 		if cm.Message == "exit" {
