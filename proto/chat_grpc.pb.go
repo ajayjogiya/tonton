@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	ChatService_Signup_FullMethodName     = "/tonton.ChatService/Signup"
 	ChatService_StreamChat_FullMethodName = "/tonton.ChatService/StreamChat"
 )
 
@@ -26,6 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatServiceClient interface {
+	Signup(ctx context.Context, in *SignupRequest, opts ...grpc.CallOption) (*SignupResponse, error)
 	StreamChat(ctx context.Context, opts ...grpc.CallOption) (ChatService_StreamChatClient, error)
 }
 
@@ -35,6 +37,15 @@ type chatServiceClient struct {
 
 func NewChatServiceClient(cc grpc.ClientConnInterface) ChatServiceClient {
 	return &chatServiceClient{cc}
+}
+
+func (c *chatServiceClient) Signup(ctx context.Context, in *SignupRequest, opts ...grpc.CallOption) (*SignupResponse, error) {
+	out := new(SignupResponse)
+	err := c.cc.Invoke(ctx, ChatService_Signup_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *chatServiceClient) StreamChat(ctx context.Context, opts ...grpc.CallOption) (ChatService_StreamChatClient, error) {
@@ -72,6 +83,7 @@ func (x *chatServiceStreamChatClient) Recv() (*Chat, error) {
 // All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility
 type ChatServiceServer interface {
+	Signup(context.Context, *SignupRequest) (*SignupResponse, error)
 	StreamChat(ChatService_StreamChatServer) error
 	mustEmbedUnimplementedChatServiceServer()
 }
@@ -80,6 +92,9 @@ type ChatServiceServer interface {
 type UnimplementedChatServiceServer struct {
 }
 
+func (UnimplementedChatServiceServer) Signup(context.Context, *SignupRequest) (*SignupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Signup not implemented")
+}
 func (UnimplementedChatServiceServer) StreamChat(ChatService_StreamChatServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamChat not implemented")
 }
@@ -94,6 +109,24 @@ type UnsafeChatServiceServer interface {
 
 func RegisterChatServiceServer(s grpc.ServiceRegistrar, srv ChatServiceServer) {
 	s.RegisterService(&ChatService_ServiceDesc, srv)
+}
+
+func _ChatService_Signup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).Signup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ChatService_Signup_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).Signup(ctx, req.(*SignupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _ChatService_StreamChat_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -128,7 +161,12 @@ func (x *chatServiceStreamChatServer) Recv() (*Chat, error) {
 var ChatService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "tonton.ChatService",
 	HandlerType: (*ChatServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Signup",
+			Handler:    _ChatService_Signup_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "StreamChat",

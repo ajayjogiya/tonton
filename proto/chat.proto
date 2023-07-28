@@ -2,8 +2,7 @@ syntax = "proto3";
 
 package tonton;
 
-option go_package = "github.com/ajayjogiya/tonton/proto";
-
+option go_package = "github.com/ajayjogiya/tonton/proto;proto";
 
 message Chat{
     string message = 1;
@@ -11,6 +10,20 @@ message Chat{
     string to = 3;
 }
 
+message SignupRequest{
+    string username = 1;
+    string password = 2;
+}
+
+message SignupResponse{
+    string token = 1;
+}
+
+
 service ChatService{
+    rpc Signup(SignupRequest) returns (SignupResponse);
     rpc StreamChat(stream Chat) returns (stream Chat);
 }
+
+
+
