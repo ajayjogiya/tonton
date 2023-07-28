@@ -12,6 +12,7 @@ var wg sync.WaitGroup
 
 func (s *Server) StreamChat(stream proto.ChatService_StreamChatServer) error {
 	log.Printf("streamChat invoked")
+	s.openStream(stream)
 	wg.Add(1)
 	go func() {
 		for {
@@ -27,7 +28,7 @@ func (s *Server) StreamChat(stream proto.ChatService_StreamChatServer) error {
 			}
 			log.Printf("message received from %s, message: %+v\n", resp.From, resp.Message)
 
-			s.send(stream, &proto.Chat{Message: "Test message", From: "server", To: "client"})
+			s.send(stream, resp)
 		}
 	}()
 	wg.Wait()
@@ -36,9 +37,17 @@ func (s *Server) StreamChat(stream proto.ChatService_StreamChatServer) error {
 }
 
 func (s *Server) send(stream proto.ChatService_StreamChatServer, chat *proto.Chat) {
-	err := stream.Send(chat)
-	if err != nil {
-		log.Fatalf("server failed send message: %+v\n", err)
-		return
+	to := chat.To
+	if val, ok := s.ClientStreams[to]; ok {
+		err := val.Send(chat)
+		if err != nil {
+			log.Fatalf("server failed send message: %+v\n", err)
+			return
+		}
+	} else {
+		log.Print("---------------------------------")
+		log.Print("user not active")
+		log.Print("---------------------------------")
+		// Add logic to store messages
 	}
 }
