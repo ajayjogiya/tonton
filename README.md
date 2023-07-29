@@ -5,18 +5,18 @@
 ## Steps to run tonton locally
  
 To download all dependencies
-```go
-go mod download
+```
+make init
 ```
 
 run server
-```go
-go run ./cmd/server
+```
+make server
 ```
 
 run client
-```go
-go run ./cmd/client
+```
+make client
 ```
 
 
